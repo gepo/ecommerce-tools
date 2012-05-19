@@ -1,4 +1,7 @@
 <?php
+$campaings = array('1111111'); // place list of CampaingnIDS here
+$days = 1; // how much days add to current
+
 define('ROOT_DIR', './');
 
 require_once ROOT_DIR . 'nusoap/lib/nusoap.php';
@@ -14,7 +17,7 @@ $client->certRequest['sslkeyfile'] = './private.key';
 $client->certRequest['cainfofile'] = './cacert.pem';
 
 $params = array(
-    'CampaignIDS' => array('1111111'), // place list of CampaingnIDS here
+    'CampaignIDS' => $campaings,
     'GetPhrases' => 'WithPrices',
 );
 
@@ -32,7 +35,6 @@ function addzero($s) {
     return $s;
 }
 
-$days = 1; // how much days add to current
 $t = localtime(time() + $days*24*60*60, true);
 $months = array('января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря');
 $anymonth = implode('|', $months);

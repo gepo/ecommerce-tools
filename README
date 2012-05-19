@@ -1,0 +1,4 @@
+Various tools for Yandex.Direct using their API.
+
+1. update_discount_banner.php
+Update discount dates for the next day after today.
