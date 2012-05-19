@@ -1,5 +1,5 @@
 <?php
-$campaings = array('1111111'); // place list of CampaingnIDS here
+$campaings = array('1111111', '123456'); // place list of CampaingnIDS here
 $days = 1; // how much days add to current
 
 define('ROOT_DIR', './');
