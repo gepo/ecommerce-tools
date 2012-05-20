@@ -42,7 +42,7 @@ $anymonth = implode('|', $months);
 $banners = array();
 
 for ($i = 0, $n = count($result); $i < $n; ++$i) {
-    if ($result[$i]['IsActive'] == 'Yes') { // skip archived and moderated ads
+    if ($result[$i]['StatusArchive'] == 'No') { //skip archived ads
         $ad = $result[$i]['Text'];
 
         $new_ad = preg_replace('/до (\d{2})\.(\d{2})/u', 'до ' . addzero($t['tm_mday']) . '.' . addzero($t['tm_mon'] + 1), $ad);
