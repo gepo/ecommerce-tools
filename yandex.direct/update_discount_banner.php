@@ -2,7 +2,7 @@
 $campaings = array('1111111', '123456'); // place list of CampaingnIDS here
 $days = 1; // how much days add to current
 
-define('ROOT_DIR', './');
+define('ROOT_DIR', '../');
 
 require_once ROOT_DIR . 'nusoap/lib/nusoap.php';
 
