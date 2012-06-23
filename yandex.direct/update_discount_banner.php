@@ -1,6 +1,5 @@
 <?php
-$campaings = array('1111111', '123456'); // place list of CampaingnIDS here
-$days = 1; // how much days add to current
+$days = 2; // how much days add to current
 
 define('ROOT_DIR', '../');
 
@@ -16,17 +15,6 @@ $client->certRequest['sslcertfile'] = './cert.crt';
 $client->certRequest['sslkeyfile'] = './private.key'; 
 $client->certRequest['cainfofile'] = './cacert.pem';
 
-$params = array(
-    'CampaignIDS' => $campaings,
-    'GetPhrases' => 'WithPrices',
-);
-
-$result = $client->call('GetBanners', array('params' => $params));
-
-if (isset($result[0]) === false) {
-    die('Invalid Campaign IDs');
-}
-
 function addzero($s) {
     if (strlen($s) < 2) {
         $s = '0' . $s;
@@ -35,31 +23,53 @@ function addzero($s) {
     return $s;
 }
 
-$t = localtime(time() + $days*24*60*60, true);
-$months = array('января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря');
-$anymonth = implode('|', $months);
 
-$banners = array();
+$rows = $client->call('GetCampaignsList', array());
+foreach ($rows as $item) {
+    if ($item['StatusArchive'] == 'Yes') {
+        continue;
+    }
+    $campaing = $item['CampaignID'];
 
-for ($i = 0, $n = count($result); $i < $n; ++$i) {
-    if ($result[$i]['StatusArchive'] == 'No') { //skip archived ads
-        $ad = $result[$i]['Text'];
+    $params = array(
+        'CampaignIDS' => array($campaing),
+        'GetPhrases' => 'WithPrices',
+    );
 
-        $new_ad = preg_replace('/до (\d{2})\.(\d{2})/u', 'до ' . addzero($t['tm_mday']) . '.' . addzero($t['tm_mon'] + 1), $ad);
+    $result = $client->call('GetBanners', array('params' => $params));
+    if (isset($result[0]) === false) {
+        print $client->getError();
+        die('Invalid campaign ID');
+    }
 
-        if ($new_ad == $ad) {
-            $new_ad = preg_replace("/до (\d{1,2}) ($anymonth)/u", 'до ' . addzero($t['tm_mday']) . ' ' . $months[$t['tm_mon']], $ad);
-        }
+    $t = localtime(time() + $days*24*60*60, true);
+    $months = array('января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря');
+    $anymonth = implode('|', $months);
 
-        if ($new_ad != $ad) {
-            $result[$i]['Text'] = $new_ad;
+    $banners = array();
 
-        //    echo "was: $ad\nnow: $new_ad\n\n";
-            $banners[] = $result[$i];
+    for ($i = 0, $n = count($result); $i < $n; ++$i) {
+        if ($result[$i]['StatusArchive'] == 'No') {
+            $ad = $result[$i]['Text'];
+
+            $newad = preg_replace('/до (\d{2})\.(\d{2})/u', 'до ' . addzero($t['tm_mday']) . '.' . addzero($t['tm_mon'] + 1), $ad);
+
+            if ($new_ad == $ad) {
+                $new_ad = preg_replace("/до (\d{1,2}) ($anymonth)/u", 'до ' . addzero($t['tm_mday']) . ' ' . $months[$t['tm_mon']], $ad);
+            }
+
+            if ($new_ad != $ad) {
+                $result[$i]['Text'] = $new_ad;
+                $banners[] = $result[$i];
+            }
         }
     }
-}
 
-print_r($client->call('CreateOrUpdateBanners', array('params' => $banners)));
-print $client->getError();
+    echo "C: $campaing; ";
+    if (count($banners) > 0) {
+        print_r($client->call('CreateOrUpdateBanners', array('params' => $banners)));
+        print $client->getError();
+    }
+    echo "\n";
+}
 ?>
