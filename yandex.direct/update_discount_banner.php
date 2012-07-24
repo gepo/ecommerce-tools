@@ -26,7 +26,7 @@ function addzero($s) {
 
 $rows = $client->call('GetCampaignsList', array());
 foreach ($rows as $item) {
-    if ($item['StatusArchive'] == 'Yes') {
+    if ($item['StatusArchive'] == 'Yes' || $item['StatusModerate'] == 'Pending') {
         continue;
     }
     $campaing = $item['CampaignID'];
