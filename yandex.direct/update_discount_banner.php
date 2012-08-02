@@ -25,21 +25,26 @@ function addzero($s) {
 
 
 $rows = $client->call('GetCampaignsList', array());
+
+mb_internal_encoding('utf8');
+
 foreach ($rows as $item) {
-    if ($item['StatusArchive'] == 'Yes' || $item['StatusModerate'] == 'Pending') {
+    if ($item['StatusArchive'] == 'Yes' || $item['StatusModerate'] == 'Pending' || $item['StatusActivating'] == 'Pending') {
         continue;
     }
-    $campaing = $item['CampaignID'];
+    $cid = $item['CampaignID'];
 
     $params = array(
-        'CampaignIDS' => array($campaing),
+        'CampaignIDS' => array($cid),
         'GetPhrases' => 'WithPrices',
-    );
+    ;
 
     $result = $client->call('GetBanners', array('params' => $params));
+
     if (isset($result[0]) === false) {
         print $client->getError();
-        die('Invalid campaign ID');
+        echo("Invalid campaign ID $cid. " . print_r($item) . "\n");
+        continue;
     }
 
     $t = localtime(time() + $days*24*60*60, true);
@@ -52,24 +57,32 @@ foreach ($rows as $item) {
         if ($result[$i]['StatusArchive'] == 'No') {
             $ad = $result[$i]['Text'];
 
-            $newad = preg_replace('/до (\d{2})\.(\d{2})/u', 'до ' . addzero($t['tm_mday']) . '.' . addzero($t['tm_mon'] + 1), $ad);
+            $new_ad = preg_replace('/до (\d{2})\.(\d{2})/u', 'до ' . addzero($t['tm_mday']) . ' ' . $months[$t['tm_mon']], $ad);
 
-            if ($new_ad == $ad) {
+            if ($new_ad != $ad) {
+                if (mb_strlen($new_ad) > 75) {
+                    $new_ad = preg_replace('/до (\d{2})\.(\d{2})/u', 'до ' . addzero($t['tm_mday']) . '.' . addzero($t['tm_mon'] + 1), $ad);
+                }
+            } else {
                 $new_ad = preg_replace("/до (\d{1,2}) ($anymonth)/u", 'до ' . addzero($t['tm_mday']) . ' ' . $months[$t['tm_mon']], $ad);
+
+                if (mb_strlen($new_ad) > 75) {
+                    $new_ad = preg_replace("/до (\d{2}) ($anymonth)/u", 'до ' . addzero($t['tm_mday']) . '.' . addzero($t['tm_mon'] + 1), $ad);
+                }
             }
 
             if ($new_ad != $ad) {
                 $result[$i]['Text'] = $new_ad;
+
                 $banners[] = $result[$i];
             }
+        } else {
         }
     }
 
-    echo "C: $campaing; ";
     if (count($banners) > 0) {
         print_r($client->call('CreateOrUpdateBanners', array('params' => $banners)));
         print $client->getError();
     }
-    echo "\n";
 }
 ?>
