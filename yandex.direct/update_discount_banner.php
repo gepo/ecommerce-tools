@@ -1,7 +1,7 @@
 <?php
-$days = 2; // how much days add to current
+$days = 1; // how much days add to current
 
-define('ROOT_DIR', '../');
+define('ROOT_DIR', './');
 
 require_once ROOT_DIR . 'nusoap/lib/nusoap.php';
 
@@ -36,8 +36,8 @@ foreach ($rows as $item) {
 
     $params = array(
         'CampaignIDS' => array($cid),
-        'GetPhrases' => 'WithPrices',
-    ;
+        'GetPhrases' => 'WithPrices'
+    );
 
     $result = $client->call('GetBanners', array('params' => $params));
 
