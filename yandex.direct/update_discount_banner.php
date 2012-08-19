@@ -14,6 +14,7 @@ $client->soap_defencoding = 'UTF-8';
 $client->certRequest['sslcertfile'] = './cert.crt'; 
 $client->certRequest['sslkeyfile'] = './private.key'; 
 $client->certRequest['cainfofile'] = './cacert.pem';
+$client->setDebugLevel(9);
 
 function addzero($s) {
     if (strlen($s) < 2) {
@@ -39,11 +40,25 @@ foreach ($rows as $item) {
         'GetPhrases' => 'WithPrices'
     );
 
-    $result = $client->call('GetBanners', array('params' => $params));
+    $attempts = 3;
+    $result = null;
+    while ($attempts > 0) {
+        $result = $client->call('GetBanners', array('params' => $params));
+
+        if (isset($result[0]) === false) {
+            --$attempts;
+        } else {
+            break;
+        }
+    }
 
     if (isset($result[0]) === false) {
-        print $client->getError();
-        echo("Invalid campaign ID $cid. " . print_r($item) . "\n");
+        echo "<!\n";
+        print $client->getError() . "\n";
+        echo "XML Request: " . $client->request . "\n";
+        echo "XML Response: " . $client->response;
+        echo("\nTime: " . date('Y-m-d H:i:s') . "(" . time() . "). Invalid campaign ID $cid.\nInput:" . print_r($params, true) . "\nOutput:\n" . print_r($result, true) . "\n");
+        echo "!>\n";
         continue;
     }
 
