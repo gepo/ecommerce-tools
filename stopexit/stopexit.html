@@ -1,0 +1,102 @@
+<div style="display: none">
+<div id="unload_poll">
+<h1>Почему Вы решили закрыть эту страницу, не сделав заказ?</h1>
+
+<input type="checkbox" class="poll_item" name="v_poll" id="v_poll_0"/><label for="v_poll_0">Я здесь случайно</label>
+<br/>
+<input type="checkbox" class="poll_item" name="v_poll" id="v_poll_1"/><label for="v_poll_1">Не нашел ничего подходящего</label>
+<br/>
+<input type="checkbox" class="poll_item" name="v_poll" id="v_poll_2"/><label for="v_poll_2">Есть нужные мне модели, но слишком дорого</label>
+<br/>
+<input type="checkbox" class="poll_item" name="v_poll" id="v_poll_3"/><label for="v_poll_3">Другое:</label>
+<br/>
+<textarea cols="40" rows="3" id="unload_poll_other" disabled="disabled"></textarea>
+<br/>
+        <button id="do_unload_poll">Отправить</button>
+        <button id="do_unload_poll_cancel">Закрыть</button>
+</div>
+</div>
+
+<script>
+var going_link = false;
+var controlkey = false; // backspace, f5, ctrl-r
+
+    window.onbeforeunload = function() {
+        if (going_link || controlkey)
+            return;
+
+        var event = event || window.event;
+
+//what about refresh?
+        if ($.cookie('user_last_action') == null) {
+            $.fancybox({
+                autoDimensions: true,
+                transitionIn: 'none',
+                href: '#unload_poll'
+            });
+
+            var message = "Постойте минутку! Нам жаль, если мы не смогли Вам помочь. Помогите нам обслужить Вас лучше. Для этого нажмите на кнопку 'Остаться на этой странице' и в появившемся окне выберите причину, почему Вы уходите. Ваше мнение для нас очень Важно!";
+
+            if (event) {
+                event.returnValue = message;
+            }
+
+            return message;
+        }
+    };
+
+$(document).ready(function() {
+    $(window).keydown(function(event) {
+        event = event || window.event;
+        var keynum = event.keyCode || event.which;
+       
+        if (keynum == 8 // backspace
+            || keynum == 116 // F5
+        ) {
+            controlkey = true;
+        } else {
+//            if ((e.ctrlKey || e.metaKey) && e.keyCode == 114) { // Ctrl-R
+            controlkey = false;
+        }
+    });
+
+    $('a').click(function() {
+        going_link = true;
+    });
+
+    $('#do_unload_poll').click(function() {
+        $.cookie('user_last_action', 'saywhyexit', { expires: 7 } );
+
+        $.fancybox.showActivity();
+        $.fancybox.close();
+
+        $.ajax({
+            url: '/api/saywhyexit',
+            type: 'POST',
+            data: {
+                p0: $('#unload_poll #v_poll_0').is(':checked'),
+                p1: $('#unload_poll #v_poll_1').is(':checked'),
+                p2: $('#unload_poll #v_poll_2').is(':checked'),
+                p3: $('#unload_poll #v_poll_3').is(':checked'),
+                other: $('#unload_poll #unload_poll_other').val()
+            }
+        }).done(function() {
+            $.fancybox.close();
+            alert('Спасибо за Ваш ответ. Мы постараемся улучшить наш сервис с учетом Вашего мнения и дадим возможность изменить его.');
+        });
+
+    });
+
+    $('#do_unload_poll_cancel').click(function() {
+        $.fancybox.close();
+    });
+
+    $('#v_poll_3').change(function() {
+        if ($('#v_poll_3').is(':checked')) {
+            $('#unload_poll_other').removeAttr('disabled');
+        } else {
+            $('#unload_poll_other').attr('disabled', 'disabled');
+        }
+    });
+});
+</script>
