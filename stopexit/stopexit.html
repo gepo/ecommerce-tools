@@ -1,3 +1,13 @@
+<html>
+<head>
+	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="http://code.jquery.com/jquery-migrate-1.1.1.min.js"></script>
+	<script src="js/jquery.fancybox.pack.js"></script>
+	<script src="js/jquery.cookie.js"></script>
+	
+	<link rel="stylesheet" type="text/css" href="css/jquery.fancybox.css" media="screen" />
+</head>
+<body>
 <div style="display: none">
 <div id="unload_poll">
 <h1>Почему Вы решили закрыть эту страницу, не сделав заказ?</h1>
@@ -23,7 +33,7 @@ var controlkey = false; // backspace, f5, ctrl-r
 
     window.onbeforeunload = function() {
         if (going_link || controlkey)
-            return;
+            return null;
 
         var event = event || window.event;
 
@@ -100,3 +110,5 @@ $(document).ready(function() {
     });
 });
 </script>
+</body>
+</html>
